@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vana Sethu — Smart Urban Tree Platform · Bengaluru</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="lib/leaflet.css"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- ══ TOP NAV ══════════════════════════════════════════════════════════════ -->
+<header class="topnav" id="topnav">
+  <div class="nav-brand">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="16" fill="#2E7D32"/>
+      <path d="M16 7C11 7 7 11 7 15.5c0 3.5 2.5 6 9 9.5 6.5-3.5 9-6 9-9.5C25 11 21 7 16 7z" fill="#fff" opacity=".9"/>
+      <rect x="15" y="20" width="2" height="6" rx="1" fill="#fff"/>
+    </svg>
+    <span class="brand-name">Vana<strong> Sethu</strong></span>
+    <span class="brand-sub">Bengaluru</span>
+  </div>
+  <nav class="nav-links">
+    <a href="#" class="nav-link active" data-panel="home">Home</a>
+    <a href="#" class="nav-link" data-panel="map">Green Cover</a>
+    <a href="#" class="nav-link" data-panel="inventory">Inventory</a>
+    <a href="#" class="nav-link" data-panel="health">Health Scanner</a>
+    <a href="#" class="nav-link" data-panel="metrics">AI Dashboard</a>
+    <a href="#" class="nav-link" data-panel="approvals">Approvals</a>
+  </nav>
+  <div class="nav-right">
+    <div class="weather-pill" id="weather-pill">
+      <span id="nav-weather-icon">🌤</span>
+      <span id="nav-weather-temp">-- °C</span>
+      <span id="nav-weather-cond">Bengaluru</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══ PANELS ════════════════════════════════════════════════════════════════ -->
+<main class="main-wrap">
+
+  <!-- ── HOME / DASHBOARD ──────────────────────────────────────────────────── -->
+  <section class="panel active" id="panel-home">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-bg-overlay"></div>
+      <div class="hero-content">
+        <p class="hero-eyebrow">BBMP Urban Forest Intelligence</p>
+        <h1 class="hero-title">Vana Sethu —<br/><em>The City in Your Hands</em></h1>
+        <p class="hero-desc">AI-powered platform to monitor, protect and grow Bengaluru's urban tree canopy in real time. <em>Vana Sethu</em> means "Bridge to the Forest" in Kannada.</p>
+        <div class="hero-cta-row">
+          <button class="btn-hero" onclick="switchPanel('map')">View Live Map</button>
+          <button class="btn-hero-outline" onclick="switchPanel('health')">Scan a Tree</button>
+        </div>
+      </div>
+      <!-- Floating stat cards -->
+      <div class="hero-stat top-right" id="stat-trees">
+        <span class="stat-num" id="hs-total">—</span>
+        <span class="stat-label">Trees Registered</span>
+      </div>
+      <div class="hero-stat bottom-left" id="stat-wards">
+        <span class="stat-num" id="hs-deficient">—</span>
+        <span class="stat-label">Deficient Wards</span>
+      </div>
+      <div class="hero-stat top-left" id="stat-health">
+        <span class="stat-num" id="hs-health">—</span>
+        <span class="stat-label">Avg Health Score</span>
+      </div>
+    </div>
+
+    <!-- Curved separator -->
+    <div class="curve-separator">
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,0 C360,80 1080,80 1440,0 L1440,80 L0,80 Z" fill="#f5f7f2"/></svg>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip">
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">🌳</div>
+        <div class="kpi-info">
+          <div class="kpi-val" id="kpi-total">—</div>
+          <div class="kpi-lbl">Total Trees</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">💚</div>
+        <div class="kpi-info">
+          <div class="kpi-val" id="kpi-avg-health">—</div>
+          <div class="kpi-lbl">Avg Health Score</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-info">
+          <div class="kpi-val" id="kpi-deficient">—</div>
+          <div class="kpi-lbl">Wards &lt; 15% Cover</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-red">
+        <div class="kpi-icon">🔧</div>
+        <div class="kpi-info">
+          <div class="kpi-val" id="kpi-maintenance">—</div>
+          <div class="kpi-lbl">Need Maintenance</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-teal">
+        <div class="kpi-icon">🌡</div>
+        <div class="kpi-info">
+          <div class="kpi-val" id="kpi-temp">—°C</div>
+          <div class="kpi-lbl">Live Temperature</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Deficient wards table -->
+    <div class="content-section">
+      <div class="section-header">
+        <h2>Most Deficient Wards</h2>
+        <span class="live-dot">● LIVE</span>
+      </div>
+      <table class="data-table" id="deficient-table">
+        <thead><tr><th>Ward</th><th>Green Cover %</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="deficient-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Section: Our mission -->
+    <div class="mission-section">
+      <div class="mission-text">
+        <p class="mission-eyebrow">Our mission</p>
+        <h2>A Greener Future for Bengaluru</h2>
+        <p>Through AI-powered tree monitoring, we help BBMP officers, NGOs and citizens make faster, smarter decisions about Bengaluru's urban forests. Every tree tracked. Every ward measured. Every alert acted on.</p>
+      </div>
+      <div class="mission-stats">
+        <div class="m-stat"><strong id="ms-total">—</strong><span>Trees in Registry</span></div>
+        <div class="m-stat"><strong>10</strong><span>Wards Monitored</span></div>
+        <div class="m-stat"><strong>9</strong><span>AI Safety Guardrails</span></div>
+        <div class="m-stat"><strong>4</strong><span>Specialised AI Agents</span></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── GREEN COVER MAP ───────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-map">
+    <div class="page-header">
+      <h1>Green Cover Map</h1>
+      <span class="update-badge" id="map-updated-badge">Last updated: —</span>
+    </div>
+    <div id="map-container"></div>
+    <div class="map-legend">
+      <span class="leg leg-critical">Critical &lt;10%</span>
+      <span class="leg leg-deficient">Deficient 10–15%</span>
+      <span class="leg leg-low">Low 15–25%</span>
+      <span class="leg leg-medium">Moderate 25–40%</span>
+      <span class="leg leg-good">Good &gt;40%</span>
+    </div>
+  </section>
+
+  <!-- ── INVENTORY ─────────────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-inventory">
+    <div class="page-header">
+      <h1>Tree Inventory</h1>
+      <button class="btn-primary" onclick="openAddModal()" style="margin-left:auto">+ Add Tree</button>
+    </div>
+
+    <!-- AI Search bar with plain-language hint -->
+    <div class="nl-bar">
+      <input type="text" id="nl-query-input"
+        placeholder='Plain language: "show diseased Neem trees in Ward 7" or "trees needing attention"'/>
+      <button id="nl-query-btn" class="btn-primary">Search with AI</button>
+    </div>
+
+    <!-- Quick filters -->
+    <div class="filter-row">
+      <input type="number" id="filter-ward" placeholder="Ward number e.g. 7" min="1" max="198"/>
+      <input type="text" id="filter-species" placeholder="Species e.g. Neem"/>
+      <select id="filter-status">
+        <option value="">All Statuses</option>
+        <option value="healthy">✅ Healthy</option>
+        <option value="stressed">⚠️ Stressed</option>
+        <option value="diseased">🔴 Diseased</option>
+        <option value="critical">🚨 Critical</option>
+      </select>
+      <button id="filter-btn" class="btn-secondary">Apply Filter</button>
+    </div>
+
+    <div id="inventory-status"></div>
+    <table class="data-table" id="inventory-table">
+      <thead><tr><th>#</th><th>Species</th><th>Ward</th><th>Age</th><th>Health</th><th>Status</th><th>Last Checked</th><th>Actions</th></tr></thead>
+      <tbody id="inventory-tbody"></tbody>
+    </table>
+    <div class="table-count" id="inventory-count"></div>
+  </section>
+
+  <!-- ── ADD / EDIT TREE MODAL ──────────────────────────────────────────────── -->
+  <div class="inv-modal-overlay" id="inv-modal" style="display:none" onclick="if(event.target===this)closeInvModal()">
+    <div class="inv-modal-box">
+      <div class="inv-modal-header">
+        <h2 id="inv-modal-title">Add New Tree</h2>
+        <button class="inv-modal-close" onclick="closeInvModal()">✕</button>
+      </div>
+      <input type="hidden" id="inv-form-tree-id"/>
+      <div class="inv-form-grid">
+        <div class="inv-field">
+          <label>Tree Species <span class="req">*</span></label>
+          <input type="text" id="inv-form-species" placeholder="e.g. Neem, Peepal, Banyan"/>
+        </div>
+        <div class="inv-field">
+          <label>Ward Number <span class="req">*</span></label>
+          <input type="number" id="inv-form-ward" placeholder="e.g. 7" min="1" max="198"/>
+        </div>
+        <div class="inv-field">
+          <label>Latitude</label>
+          <input type="number" id="inv-form-lat" placeholder="e.g. 12.9716" step="0.0001"/>
+        </div>
+        <div class="inv-field">
+          <label>Longitude</label>
+          <input type="number" id="inv-form-lng" placeholder="e.g. 77.5946" step="0.0001"/>
+        </div>
+        <div class="inv-field">
+          <label>Age (years)</label>
+          <input type="number" id="inv-form-age" placeholder="e.g. 5" min="0"/>
+        </div>
+        <div class="inv-field">
+          <label>Health Score (0–100)</label>
+          <input type="number" id="inv-form-health" placeholder="100" min="0" max="100"/>
+        </div>
+        <div class="inv-field">
+          <label>Status</label>
+          <select id="inv-form-status">
+            <option value="healthy">✅ Healthy</option>
+            <option value="stressed">⚠️ Stressed</option>
+            <option value="diseased">🔴 Diseased</option>
+            <option value="critical">🚨 Critical</option>
+          </select>
+        </div>
+        <div class="inv-field">
+          <label>Last Checked</label>
+          <input type="date" id="inv-form-date"/>
+        </div>
+      </div>
+      <p class="inv-modal-error" id="inv-modal-error"></p>
+      <div class="inv-modal-footer">
+        <button class="btn-secondary" onclick="closeInvModal()">Cancel</button>
+        <button class="btn-primary" id="inv-modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAINTENANCE MODAL ──────────────────────────────────────────────────── -->
+  <div class="inv-modal-overlay" id="maint-modal" style="display:none" onclick="if(event.target===this)closeMaintModal()">
+    <div class="inv-modal-box">
+      <div class="inv-modal-header">
+        <h2>🔧 Maintenance Log</h2>
+        <button class="inv-modal-close" onclick="closeMaintModal()">✕</button>
+      </div>
+      <p id="maint-tree-label" style="font-weight:600;margin-bottom:12px;color:var(--forest)"></p>
+      <input type="hidden" id="maint-tree-id-hidden"/>
+
+      <!-- Existing log -->
+      <div class="maint-log-section">
+        <div class="inv-field-label">Past Maintenance Records</div>
+        <ul id="maint-log-list" class="maint-log-list"></ul>
+      </div>
+
+      <!-- New entry -->
+      <div class="inv-form-grid" style="margin-top:16px">
+        <div class="inv-field" style="grid-column:1/-1">
+          <label>Action Performed <span class="req">*</span></label>
+          <input type="text" id="maint-action" placeholder='e.g. "Applied neem oil spray" or "Pruned dead branches"'/>
+        </div>
+        <div class="inv-field" style="grid-column:1/-1">
+          <label>Notes</label>
+          <input type="text" id="maint-notes" placeholder="Any additional notes (optional)"/>
+        </div>
+        <div class="inv-field" style="grid-column:1/-1">
+          <label>Officer Name</label>
+          <input type="text" id="maint-officer" placeholder="Your name or officer ID (optional)"/>
+        </div>
+      </div>
+      <p class="inv-modal-error" id="maint-modal-error"></p>
+      <div class="inv-modal-footer">
+        <button class="btn-secondary" onclick="closeMaintModal()">Close</button>
+        <button class="btn-primary" id="maint-save-btn">Log Action</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HEALTH SCANNER ────────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-health">
+    <div class="page-header"><h1>Tree Health Scanner</h1></div>
+    <div class="health-layout">
+      <div class="upload-card">
+        <div class="upload-zone" id="upload-zone">
+          <div class="upload-icon">🌿</div>
+          <p>Drop a tree image here or click to browse</p>
+          <p class="upload-hint">JPEG / PNG · max 5MB</p>
+          <input type="file" id="file-input" accept=".jpg,.jpeg,.png" hidden/>
+        </div>
+        <div class="env-params">
+          <div class="param-row"><label>Ward</label><input type="number" id="param-ward" placeholder="e.g. 7"/></div>
+          <div class="param-row"><label>Temperature (°C)</label><input type="number" id="param-temp" placeholder="e.g. 28"/></div>
+          <div class="param-row"><label>Soil pH</label><input type="number" id="param-ph" step="0.1" placeholder="e.g. 6.5"/></div>
+          <div class="param-row"><label>Rainfall (mm)</label><input type="number" id="param-rain" placeholder="e.g. 12"/></div>
+        </div>
+        <button id="assess-btn" class="btn-primary full-width">Analyse Tree</button>
+      </div>
+      <div class="health-result-card" id="health-result" style="display:none">
+        <div class="health-score-ring" id="health-score-ring">
+          <span id="health-score-num">—</span><small>/100</small>
+        </div>
+        <div class="health-sections">
+          <div class="health-section"><div class="section-label">Issues Detected</div><ul id="health-issues"></ul></div>
+          <div class="health-section"><div class="section-label">Maintenance Actions</div><ul id="health-actions"></ul></div>
+          <div class="health-section"><div class="section-label">AI Reasoning</div><p id="health-reasoning" class="reasoning-text"></p></div>
+          <div class="health-section">
+            <div class="section-label">Confidence</div>
+            <div class="confidence-bar"><div class="confidence-fill" id="confidence-fill"></div></div>
+            <span id="confidence-pct"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HITL Modal -->
+    <div class="hitl-modal" id="hitl-modal" style="display:none">
+      <div class="hitl-box">
+        <h2>⚠ Officer Approval Required</h2>
+        <p>Critical health score detected. An officer must approve before flagging this tree for removal.</p>
+        <div id="hitl-action-id" style="font-size:11px;color:#888;margin-bottom:18px"></div>
+        <div style="display:flex;gap:12px">
+          <button class="btn-primary" id="hitl-approve-btn">Approve</button>
+          <button class="btn-danger" id="hitl-reject-btn">Reject</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AI PERFORMANCE DASHBOARD ─────────────────────────────────────────── -->
+  <section class="panel" id="panel-metrics">
+    <div class="page-header">
+      <h1>LLM &amp; Agent Performance Dashboard</h1>
+      <button class="btn-secondary" id="refresh-metrics-btn" style="margin-left:auto">↺ Refresh</button>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="metrics-tabs">
+      <button class="mtab active" data-tab="accuracy">Accuracy &amp; Quality</button>
+      <button class="mtab" data-tab="rag">RAG Metrics</button>
+      <button class="mtab" data-tab="agentic">Agentic AI</button>
+      <button class="mtab" data-tab="safety">Safety &amp; Guardrails</button>
+      <button class="mtab" data-tab="perf">Performance &amp; Cost</button>
+      <button class="mtab" data-tab="multiagent">Multi-Agent</button>
+    </div>
+
+    <!-- Tab: Accuracy & Quality -->
+    <div class="mtab-panel active" id="mtab-accuracy">
+      <div class="metrics-kpi-row" id="mq-kpis"></div>
+      <div class="metrics-chart-row">
+        <div class="chart-card">
+          <div class="chart-title">Accuracy Metrics Overview</div>
+          <div class="bar-chart" id="mq-bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Metric Definitions</div>
+          <table class="metrics-def-table">
+            <tr><th>Metric</th><th>Description</th></tr>
+            <tr><td>Accuracy</td><td>Correctness of generated answers</td></tr>
+            <tr><td>Precision</td><td>Relevant results that are actually correct</td></tr>
+            <tr><td>Recall</td><td>Relevant results successfully retrieved</td></tr>
+            <tr><td>F1 Score</td><td>Harmonic mean of precision and recall</td></tr>
+            <tr><td>Exact Match</td><td>Answer exactly matches expected output</td></tr>
+            <tr><td>Semantic Sim.</td><td>Similarity between generated &amp; reference</td></tr>
+            <tr><td>ROUGE-L</td><td>Overlap of generated text with reference</td></tr>
+            <tr><td>BLEU</td><td>N-gram precision against reference text</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: RAG -->
+    <div class="mtab-panel" id="mtab-rag">
+      <div class="metrics-kpi-row" id="mrag-kpis"></div>
+      <div class="metrics-chart-row">
+        <div class="chart-card">
+          <div class="chart-title">RAG Pipeline Scores</div>
+          <div class="bar-chart" id="mrag-bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">RAG Metric Definitions</div>
+          <table class="metrics-def-table">
+            <tr><th>Metric</th><th>Description</th></tr>
+            <tr><td>Context Precision</td><td>Retrieved documents are relevant</td></tr>
+            <tr><td>Context Recall</td><td>Relevant info is retrieved</td></tr>
+            <tr><td>Faithfulness</td><td>Answer supported by retrieved context</td></tr>
+            <tr><td>Answer Relevancy</td><td>Answer relevant to user query</td></tr>
+            <tr><td>Context Relevancy</td><td>Relevance of retrieved context</td></tr>
+            <tr><td>Groundedness</td><td>Responses grounded in source data</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Agentic AI -->
+    <div class="mtab-panel" id="mtab-agentic">
+      <div class="metrics-kpi-row" id="mag-kpis"></div>
+      <div class="metrics-chart-row">
+        <div class="chart-card full-width-chart">
+          <div class="chart-title">Per-Agent Performance</div>
+          <div class="agent-perf-grid" id="agent-perf-grid"></div>
+        </div>
+      </div>
+      <div class="metrics-chart-row">
+        <div class="chart-card">
+          <div class="chart-title">Agentic Metric Definitions</div>
+          <table class="metrics-def-table">
+            <tr><th>Metric</th><th>Description</th></tr>
+            <tr><td>Task Completion</td><td>% tasks successfully completed</td></tr>
+            <tr><td>Goal Achievement</td><td>Agent achieves assigned objective</td></tr>
+            <tr><td>Tool Call Accuracy</td><td>Correct tools selected and invoked</td></tr>
+            <tr><td>Planning Accuracy</td><td>Quality of execution plan</td></tr>
+            <tr><td>Reasoning Quality</td><td>Logical consistency of reasoning</td></tr>
+            <tr><td>Agent Coordination</td><td>Communication between agents</td></tr>
+            <tr><td>Loop Detection</td><td>Identifies infinite execution cycles</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Safety & Guardrails -->
+    <div class="mtab-panel" id="mtab-safety">
+      <div class="metrics-kpi-row" id="ms-kpis"></div>
+      <div class="metrics-chart-row">
+        <div class="chart-card">
+          <div class="chart-title">Safety Score Overview</div>
+          <div class="bar-chart" id="ms-bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Guardrail Layer Status</div>
+          <div class="guardrail-status-grid" id="guardrail-status-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Performance & Cost -->
+    <div class="mtab-panel" id="mtab-perf">
+      <div class="metrics-kpi-row" id="mp-kpis"></div>
+      <div class="metrics-chart-row">
+        <div class="chart-card">
+          <div class="chart-title">Token Usage</div>
+          <div class="bar-chart" id="mp-token-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Cost Breakdown</div>
+          <div class="cost-breakdown" id="cost-breakdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Multi-Agent -->
+    <div class="mtab-panel" id="mtab-multiagent">
+      <div class="metrics-kpi-row" id="mma-kpis"></div>
+      <div class="metrics-chart-row">
+        <div class="chart-card">
+          <div class="chart-title">Individual Agent Accuracy</div>
+          <div class="bar-chart" id="mma-bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Multi-Agent Evaluation Framework</div>
+          <table class="metrics-def-table">
+            <tr><th>Dimension</th><th>What is evaluated</th></tr>
+            <tr><td>Total Execution</td><td>E2E time and cost across all agents</td></tr>
+            <tr><td>Workflow Completion</td><td>End-to-end task finishing rate</td></tr>
+            <tr><td>Supervisor Accuracy</td><td>Dashboard Agent routing precision</td></tr>
+            <tr><td>Conflict Resolution</td><td>How conflicting agent outputs are handled</td></tr>
+            <tr><td>Inter-Agent Consistency</td><td>Outputs agree across agents</td></tr>
+            <tr><td>Task Distribution</td><td>Efficient load sharing between agents</td></tr>
+            <tr><td>Comm Success Rate</td><td>Agent-to-agent calls succeed</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── APPROVALS ─────────────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-approvals">
+    <div class="page-header"><h1>Pending Approvals</h1></div>
+    <div id="approvals-list"></div>
+  </section>
+
+</main>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+        <circle cx="16" cy="16" r="16" fill="#2E7D32"/>
+        <path d="M16 7C11 7 7 11 7 15.5c0 3.5 2.5 6 9 9.5 6.5-3.5 9-6 9-9.5C25 11 21 7 16 7z" fill="#fff" opacity=".9"/>
+        <rect x="15" y="20" width="2" height="6" rx="1" fill="#fff"/>
+      </svg>
+      <span>Vana Sethu — Smart Urban Tree Platform · Bengaluru</span>
+    </div>
+    <div class="footer-info">IBM Bob Hackathon · 4 AI Agents · 9 Guardrail Layers · Live Data</div>
+  </div>
+</footer>
+
+<!-- Guardrail toast -->
+<div class="guardrail-toast" id="guardrail-toast" style="display:none">
+  <span id="toast-msg">🛡 Input contains restricted content. Please rephrase.</span>
+  <button onclick="document.getElementById('guardrail-toast').style.display='none'">✕</button>
+</div>
+
+<script src="lib/leaflet.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/map.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/health_scanner.js"></script>
+<script src="js/metrics.js"></script>
+<script src="js/agent.js"></script>
+</body>
+</html>
